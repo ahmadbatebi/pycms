@@ -1,0 +1,78 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pressassist"
+version = "0.1.0"
+description = "A secure, Python-based flat-file CMS inspired by WonderCMS"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "PressAssist Team"}
+]
+keywords = ["cms", "flat-file", "python", "fastapi", "security"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Web Environment",
+    "Framework :: FastAPI",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Content Management System",
+]
+dependencies = [
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    "jinja2>=3.1.0",
+    "python-multipart>=0.0.6",
+    "itsdangerous>=2.1.0",
+    "bcrypt>=4.0.0",
+    "bleach>=6.1.0",
+    "markdown-it-py>=3.0.0",
+    "pyyaml>=6.0",
+    "pillow>=10.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.23.0",
+    "httpx>=0.26.0",
+    "bandit>=1.7.0",
+    "pip-audit>=2.6.0",
+    "ruff>=0.1.0",
+]
+
+[project.scripts]
+pressassist = "pressassist.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/pressassist/pressassist"
+Documentation = "https://github.com/pressassist/pressassist/docs"
+Repository = "https://github.com/pressassist/pressassist"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pressassist"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "S", "B"]
+ignore = ["S101"]  # Allow assert in tests
+
+[tool.bandit]
+exclude_dirs = ["tests"]
+skips = ["B101"]  # Skip assert warnings

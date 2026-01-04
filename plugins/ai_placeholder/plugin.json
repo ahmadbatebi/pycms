@@ -1,0 +1,11 @@
+{
+    "name": "AI Placeholder",
+    "version": "0.1.0",
+    "description": "Placeholder for future AI integration - suggestions only, never auto-modifies content",
+    "author": "PressAssist Team",
+    "homepage": "",
+    "entrypoint": "plugin.py",
+    "permissions": [
+        "api:read_pages"
+    ]
+}

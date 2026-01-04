@@ -1,0 +1,12 @@
+{
+    "name": "Hello World",
+    "version": "1.0.0",
+    "description": "A simple example plugin that demonstrates the hook system",
+    "author": "PressAssist Team",
+    "homepage": "",
+    "entrypoint": "plugin.py",
+    "permissions": [
+        "hook:css_inject",
+        "hook:page_render"
+    ]
+}

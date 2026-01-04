@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="{{ cms.site_lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>{{ cms.site_title }} - {{ cms.page_title }}</title>
+
+    <meta name="description" content="{{ cms.page_description }}">
+    <meta name="keywords" content="{{ cms.page_keywords }}">
+
+    <link rel="stylesheet" href="{{ cms.asset('css/style.css') }}">
+
+    {{ cms.admin_css | safe }}
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="site-title">{{ cms.site_title }}</a>
+            <nav class="main-nav">
+                <ul>
+                    {% for item in cms.menu_items %}
+                    <li>
+                        <a href="/{{ item.slug }}"
+                           {% if item.slug == cms.page_slug %}class="active"{% endif %}>
+                            {{ item.name }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="site-main">
+        <div class="container">
+            {% block content %}
+            <article class="page-content">
+                <h1>{{ cms.page_title }}</h1>
+                {{ cms.page_content | safe }}
+            </article>
+            {% endblock %}
+        </div>
+    </main>
+
+    <aside class="site-sidebar">
+        <div class="container">
+            {{ cms.blocks.sidebar | safe }}
+        </div>
+    </aside>
+
+    <footer class="site-footer">
+        <div class="container">
+            {{ cms.blocks.footer | safe }}
+        </div>
+    </footer>
+
+    {{ cms.admin_js | safe }}
+</body>
+</html>

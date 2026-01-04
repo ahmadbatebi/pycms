@@ -1,0 +1,75 @@
+{
+    "common": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "create": "Create",
+        "back": "Back",
+        "loading": "Loading...",
+        "error": "Error",
+        "success": "Success"
+    },
+    "login": {
+        "title": "Login",
+        "password": "Password",
+        "submit": "Login",
+        "failed": "Invalid Password",
+        "try_again": "Try again",
+        "rate_limited": "Too many attempts. Please try again later."
+    },
+    "admin": {
+        "title": "Admin Dashboard",
+        "logout": "Logout",
+        "pages": {
+            "title": "Pages",
+            "new": "New Page",
+            "edit": "Edit Page",
+            "delete_confirm": "Are you sure you want to delete this page?"
+        },
+        "blocks": {
+            "title": "Blocks",
+            "header": "Header",
+            "footer": "Footer",
+            "sidebar": "Sidebar"
+        },
+        "uploads": {
+            "title": "Uploads",
+            "upload": "Upload File",
+            "delete_confirm": "Are you sure you want to delete this file?",
+            "allowed_types": "Allowed: {types}",
+            "max_size": "Maximum size: {size}MB"
+        },
+        "settings": {
+            "title": "Settings",
+            "site_title": "Site Title",
+            "site_lang": "Site Language",
+            "theme": "Theme",
+            "default_page": "Default Page"
+        },
+        "plugins": {
+            "title": "Plugins",
+            "enable": "Enable",
+            "disable": "Disable",
+            "no_plugins": "No plugins installed"
+        },
+        "themes": {
+            "title": "Themes",
+            "activate": "Activate",
+            "active": "Active"
+        },
+        "backup": {
+            "title": "Backup",
+            "create": "Create Backup",
+            "restore": "Restore",
+            "no_backups": "No backups available"
+        }
+    },
+    "errors": {
+        "not_found": "Page not found",
+        "not_initialized": "Site not initialized",
+        "permission_denied": "Permission denied",
+        "session_expired": "Session expired",
+        "csrf_invalid": "Invalid security token"
+    }
+}
