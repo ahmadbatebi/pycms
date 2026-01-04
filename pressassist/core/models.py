@@ -1,4 +1,4 @@
-"""Pydantic models for PressAssistCMS."""
+"""Pydantic models for ChelCheleh CMS."""
 
 from datetime import datetime, timezone
 from enum import Enum

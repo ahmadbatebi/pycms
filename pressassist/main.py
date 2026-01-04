@@ -1,5 +1,6 @@
-"""FastAPI application for PressAssistCMS."""
+"""FastAPI application for ChelCheleh CMS."""
 
+import asyncio
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Annotated
@@ -16,6 +17,7 @@ from .core.hooks import hook_manager
 from .core.plugins import PluginManager
 from .core.sanitize import Sanitizer
 from .core.security_headers import SecurityHeadersMiddleware
+from .core.session_store import RateLimitStore, SessionStore
 from .core.storage import Storage
 from .core.themes import CMSContext, ThemeManager
 from .admin.routes import router as admin_router
@@ -30,6 +32,40 @@ sanitizer: Sanitizer | None = None
 theme_manager: ThemeManager | None = None
 plugin_manager: PluginManager | None = None
 audit_logger: AuditLogger | None = None
+_cleanup_task: asyncio.Task | None = None
+
+
+async def periodic_cleanup():
+    """Background task for periodic cleanup of sessions, rate limits, and audit logs."""
+    while True:
+        try:
+            await asyncio.sleep(3600)  # Run every hour
+
+            if auth:
+                # Clean up expired sessions
+                cleaned_sessions = auth.cleanup_expired_sessions()
+                if cleaned_sessions > 0:
+                    from .core.logging import logger
+                    logger.info(f"Cleaned up {cleaned_sessions} expired sessions")
+
+                # Clean up old rate limit entries
+                cleaned_rate_limits = auth.cleanup_rate_limits()
+                if cleaned_rate_limits > 0:
+                    from .core.logging import logger
+                    logger.info(f"Cleaned up rate limits for {cleaned_rate_limits} IPs")
+
+            if audit_logger:
+                # Clean up old audit log entries
+                cleaned_entries = audit_logger.cleanup_old_entries()
+                if cleaned_entries > 0:
+                    from .core.logging import logger
+                    logger.info(f"Cleaned up {cleaned_entries} old audit log entries")
+
+        except asyncio.CancelledError:
+            break
+        except Exception as e:
+            from .core.logging import logger
+            logger.error(f"Error in periodic cleanup: {e}")
 
 
 @asynccontextmanager
@@ -52,12 +88,23 @@ async def lifespan(app: FastAPI):
     # Initialize config
     config = Config(app_config, storage)
 
-    # Initialize auth
+    # Initialize persistent stores for sessions and rate limiting
+    # This enables multi-worker support
+    session_store = SessionStore(app_config.sessions_file)
+    rate_limit_store = RateLimitStore(
+        app_config.rate_limit_file,
+        max_attempts=app_config.rate_limit_attempts,
+        window_minutes=app_config.rate_limit_window_minutes,
+    )
+
+    # Initialize auth with persistent stores
     auth = AuthManager(
         bcrypt_rounds=app_config.bcrypt_rounds,
         session_lifetime_hours=app_config.session_lifetime_hours,
         rate_limit_attempts=app_config.rate_limit_attempts,
         rate_limit_window_minutes=app_config.rate_limit_window_minutes,
+        session_store=session_store,
+        rate_limit_store=rate_limit_store,
     )
 
     # Initialize sanitizer
@@ -83,15 +130,28 @@ async def lifespan(app: FastAPI):
     # Initialize audit logger
     audit_logger = AuditLogger(app_config.audit_log_path)
 
+    # Start periodic cleanup task
+    global _cleanup_task
+    _cleanup_task = asyncio.create_task(periodic_cleanup())
+
     yield
 
-    # Cleanup on shutdown
+    # Cancel cleanup task
+    if _cleanup_task:
+        _cleanup_task.cancel()
+        try:
+            await _cleanup_task
+        except asyncio.CancelledError:
+            pass
+
+    # Final cleanup on shutdown
     auth.cleanup_expired_sessions()
+    auth.cleanup_rate_limits()
 
 
 # Create FastAPI app
 app = FastAPI(
-    title="PressAssistCMS",
+    title="ChelCheleh CMS",
     description="A secure, Python-based flat-file CMS",
     version="0.1.0",
     lifespan=lifespan,
@@ -100,29 +160,9 @@ app = FastAPI(
 # Include admin routes
 app.include_router(admin_router)
 
-
-@app.middleware("http")
-async def security_headers_middleware(request: Request, call_next):
-    """Add security headers to all responses."""
-    response = await call_next(request)
-
-    # Add security headers
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "SAMEORIGIN"
-    response.headers["X-XSS-Protection"] = "1; mode=block"
-    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-
-    # CSP
-    response.headers["Content-Security-Policy"] = (
-        "default-src 'self'; "
-        "script-src 'self'; "
-        "style-src 'self' 'unsafe-inline'; "
-        "img-src 'self' data:; "
-        "font-src 'self'; "
-        "frame-ancestors 'none'"
-    )
-
-    return response
+# Add security headers middleware
+# This provides comprehensive security headers including HSTS, CSP, and more
+app.add_middleware(SecurityHeadersMiddleware, force_https=True)
 
 
 # Dependency to get current session
@@ -297,14 +337,20 @@ async def render_page(request: Request, slug: str) -> HTMLResponse:
 
 async def login_page(request: Request) -> HTMLResponse:
     """Render login page."""
-    # Simple login form
-    csrf_token = get_csrf_token(request)
+    import secrets as _secrets
+
+    # Get or create CSRF token
+    csrf_token = request.cookies.get("csrf_token")
+    needs_cookie = False
+    if not csrf_token:
+        csrf_token = _secrets.token_urlsafe(32)
+        needs_cookie = True
 
     html = f"""
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Login - PressAssistCMS</title>
+        <title>Login - ChelCheleh CMS</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
@@ -319,7 +365,7 @@ async def login_page(request: Request) -> HTMLResponse:
     </head>
     <body>
         <h1>Login</h1>
-        <form method="POST" action="">
+        <form method="POST">
             <input type="hidden" name="csrf_token" value="{csrf_token}">
             <input type="password" name="password" placeholder="Password" required autofocus>
             <button type="submit">Login</button>
@@ -327,7 +373,22 @@ async def login_page(request: Request) -> HTMLResponse:
     </body>
     </html>
     """
-    return HTMLResponse(html)
+    response = HTMLResponse(html)
+
+    # Set CSRF cookie if needed
+    if needs_cookie:
+        # Use force_https setting from config to determine secure flag
+        use_secure = request.url.scheme == "https"
+        response.set_cookie(
+            key="csrf_token",
+            value=csrf_token,
+            httponly=False,  # Must be readable by JavaScript for double-submit pattern
+            samesite="lax",
+            secure=use_secure,
+            max_age=3600 * 4,
+        )
+
+    return response
 
 
 @app.post("/{slug:path}")
@@ -345,10 +406,11 @@ async def handle_login(request: Request, slug: str):
     password = form.get("password", "")
     csrf_token = form.get("csrf_token", "")
 
-    # Verify CSRF
+    # Verify CSRF using constant-time comparison to prevent timing attacks
+    import secrets as _secrets
     cookie_token = request.cookies.get("csrf_token", "")
-    if not csrf_token or not cookie_token:
-        raise HTTPException(status_code=403, detail="Missing CSRF token")
+    if not csrf_token or not cookie_token or not _secrets.compare_digest(csrf_token, cookie_token):
+        raise HTTPException(status_code=403, detail="Invalid CSRF token")
 
     # Get client info
     client_ip = request.client.host if request.client else "unknown"
@@ -380,13 +442,13 @@ async def handle_login(request: Request, slug: str):
         )
 
         # Redirect to admin
-        response = RedirectResponse(url="/admin", status_code=303)
+        response = RedirectResponse(url="/admin/", status_code=303)
         response.set_cookie(
             key="session_id",
             value=session.session_id,
             httponly=True,
             samesite="lax",
-            secure=storage.get("config.force_https", True),
+            secure=request.url.scheme == "https",
             max_age=3600 * 4,
         )
         return response
@@ -416,20 +478,3 @@ async def handle_login(request: Request, slug: str):
             """,
             status_code=401,
         )
-
-
-@app.get("/admin/logout")
-async def logout(request: Request):
-    """Handle logout."""
-    session = await get_session(request)
-    if session:
-        auth.invalidate_session(session.session_id)
-        if audit_logger:
-            audit_logger.log_logout(
-                session.user_id,
-                request.client.host if request.client else None,
-            )
-
-    response = RedirectResponse(url="/", status_code=303)
-    response.delete_cookie("session_id")
-    return response

@@ -247,7 +247,7 @@ class AuditLogger:
         )
 
     def read_recent(self, limit: int = 100) -> list[dict]:
-        """Read recent audit log entries.
+        """Read recent audit log entries using optimized tail-like approach.
 
         Args:
             limit: Maximum entries to return.
@@ -258,6 +258,28 @@ class AuditLogger:
         if not self.log_path.exists():
             return []
 
+        try:
+            # Use optimized tail-like reading for large files
+            file_size = self.log_path.stat().st_size
+
+            # For small files, read entire file
+            if file_size < 1024 * 1024:  # Less than 1MB
+                return self._read_recent_full(limit)
+
+            # For larger files, read from end
+            return self._read_recent_tail(limit, file_size)
+        except OSError:
+            return []
+
+    def _read_recent_full(self, limit: int) -> list[dict]:
+        """Read recent entries by reading entire file (for small files).
+
+        Args:
+            limit: Maximum entries to return.
+
+        Returns:
+            List of recent log entries (newest first).
+        """
         entries = []
         try:
             with open(self.log_path, "r", encoding="utf-8") as f:
@@ -273,6 +295,49 @@ class AuditLogger:
 
         # Return most recent first
         return list(reversed(entries[-limit:]))
+
+    def _read_recent_tail(self, limit: int, file_size: int) -> list[dict]:
+        """Read recent entries from file tail (for large files).
+
+        Args:
+            limit: Maximum entries to return.
+            file_size: Size of the file in bytes.
+
+        Returns:
+            List of recent log entries (newest first).
+        """
+        # Estimate bytes needed (assume avg 500 bytes per entry)
+        chunk_size = min(file_size, max(8192, limit * 500))
+
+        try:
+            with open(self.log_path, "rb") as f:
+                # Seek to near end
+                f.seek(max(0, file_size - chunk_size))
+
+                # Skip partial first line if not at start
+                if f.tell() > 0:
+                    f.readline()
+
+                # Read remaining content
+                content = f.read().decode("utf-8", errors="replace")
+
+            lines = content.strip().split("\n")
+            entries = []
+
+            for line in reversed(lines[-limit:]):
+                line = line.strip()
+                if line:
+                    try:
+                        entries.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        continue
+
+                if len(entries) >= limit:
+                    break
+
+            return entries
+        except OSError:
+            return []
 
     def cleanup_old_entries(self) -> int:
         """Remove entries older than max_age_days.

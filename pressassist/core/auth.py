@@ -3,11 +3,13 @@
 import secrets
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Optional
 
 import bcrypt as _bcrypt
 
 from .models import LoginAttempt, Role, Session
+from .session_store import RateLimitStore, SessionStore
 
 
 class AuthError(Exception):
@@ -28,8 +30,9 @@ class AuthManager:
     Features:
     - bcrypt password hashing
     - Secure session tokens
-    - Rate limiting for login attempts
+    - Rate limiting for login attempts (file-based for multi-worker support)
     - Role-based access control
+    - Persistent sessions (file-based for multi-worker support)
     """
 
     # Permission matrix: role -> allowed actions
@@ -71,6 +74,8 @@ class AuthManager:
         session_lifetime_hours: int = 4,
         rate_limit_attempts: int = 5,
         rate_limit_window_minutes: int = 15,
+        session_store: SessionStore | None = None,
+        rate_limit_store: RateLimitStore | None = None,
     ):
         """Initialize auth manager.
 
@@ -79,17 +84,26 @@ class AuthManager:
             session_lifetime_hours: Session validity in hours.
             rate_limit_attempts: Max login attempts per window.
             rate_limit_window_minutes: Rate limit window in minutes.
+            session_store: Optional persistent session store.
+            rate_limit_store: Optional persistent rate limit store.
         """
         self.bcrypt_rounds = bcrypt_rounds
         self.session_lifetime = timedelta(hours=session_lifetime_hours)
         self.rate_limit_attempts = rate_limit_attempts
         self.rate_limit_window = timedelta(minutes=rate_limit_window_minutes)
 
-        # In-memory session store (for single-server deployment)
-        self._sessions: dict[str, Session] = {}
+        # Use file-based stores if provided, otherwise fallback to in-memory
+        self._session_store = session_store
+        self._rate_limit_store = rate_limit_store
 
-        # Rate limiting: IP -> list of LoginAttempt
+        # Fallback in-memory stores (for CLI and testing)
+        self._sessions: dict[str, Session] = {}
         self._login_attempts: dict[str, list[LoginAttempt]] = defaultdict(list)
+
+    @property
+    def use_persistent_storage(self) -> bool:
+        """Check if using persistent file-based storage."""
+        return self._session_store is not None
 
     def hash_password(self, password: str) -> str:
         """Hash a password using bcrypt.
@@ -153,8 +167,13 @@ class AuthManager:
             ip: Client IP address.
 
         Returns:
-            True if under limit, False if exceeded.
+            True if under limit (allowed), False if exceeded (blocked).
         """
+        # Use file-based store if available
+        if self._rate_limit_store:
+            return self._rate_limit_store.check_rate_limit(ip)
+
+        # Fallback to in-memory
         now = datetime.now(timezone.utc)
         window_start = now - self.rate_limit_window
 
@@ -182,6 +201,12 @@ class AuthManager:
             success: Whether login succeeded.
             user_agent: Optional user agent string.
         """
+        # Use file-based store if available
+        if self._rate_limit_store:
+            self._rate_limit_store.record_attempt(ip, success, user_agent)
+            return
+
+        # Fallback to in-memory
         self._login_attempts[ip].append(
             LoginAttempt(
                 ip=ip,
@@ -223,7 +248,12 @@ class AuthManager:
             expires_at=now + self.session_lifetime,
         )
 
-        self._sessions[session_id] = session
+        # Use file-based store if available
+        if self._session_store:
+            self._session_store.save_session(session)
+        else:
+            self._sessions[session_id] = session
+
         return session
 
     def verify_session(self, session_id: str) -> Optional[Session]:
@@ -235,7 +265,15 @@ class AuthManager:
         Returns:
             Session if valid, None otherwise.
         """
-        if not session_id or session_id not in self._sessions:
+        if not session_id:
+            return None
+
+        # Use file-based store if available
+        if self._session_store:
+            return self._session_store.get_session(session_id)
+
+        # Fallback to in-memory
+        if session_id not in self._sessions:
             return None
 
         session = self._sessions[session_id]
@@ -256,6 +294,11 @@ class AuthManager:
         Returns:
             True if session was found and removed.
         """
+        # Use file-based store if available
+        if self._session_store:
+            return self._session_store.delete_session(session_id)
+
+        # Fallback to in-memory
         if session_id in self._sessions:
             del self._sessions[session_id]
             return True
@@ -270,6 +313,11 @@ class AuthManager:
         Returns:
             Number of sessions invalidated.
         """
+        # Use file-based store if available
+        if self._session_store:
+            return self._session_store.delete_user_sessions(user_id)
+
+        # Fallback to in-memory
         to_remove = [
             sid for sid, session in self._sessions.items() if session.user_id == user_id
         ]
@@ -312,6 +360,11 @@ class AuthManager:
         Returns:
             Number of sessions removed.
         """
+        # Use file-based store if available
+        if self._session_store:
+            return self._session_store.cleanup_expired()
+
+        # Fallback to in-memory
         now = datetime.now(timezone.utc)
         expired = [
             sid for sid, session in self._sessions.items() if session.expires_at < now
@@ -319,6 +372,16 @@ class AuthManager:
         for sid in expired:
             del self._sessions[sid]
         return len(expired)
+
+    def cleanup_rate_limits(self) -> int:
+        """Remove old rate limit entries.
+
+        Returns:
+            Number of IPs cleaned.
+        """
+        if self._rate_limit_store:
+            return self._rate_limit_store.cleanup_old_attempts()
+        return 0
 
     def get_session_count(self, user_id: str | None = None) -> int:
         """Get count of active sessions.
@@ -329,6 +392,11 @@ class AuthManager:
         Returns:
             Number of active sessions.
         """
+        # Use file-based store if available
+        if self._session_store:
+            return self._session_store.get_session_count(user_id)
+
+        # Fallback to in-memory
         if user_id:
             return sum(1 for s in self._sessions.values() if s.user_id == user_id)
         return len(self._sessions)

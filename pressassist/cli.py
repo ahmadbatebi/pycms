@@ -1,4 +1,4 @@
-"""Command-line interface for PressAssistCMS."""
+"""Command-line interface for ChelCheleh CMS."""
 
 import secrets
 import sys
@@ -14,7 +14,7 @@ from .core.storage import Storage
 @click.group()
 @click.version_option(prog_name="pressassist")
 def main():
-    """PressAssistCMS - A secure, Python-based flat-file CMS."""
+    """ChelCheleh CMS - A secure, Python-based flat-file CMS."""
     pass
 
 
@@ -34,7 +34,7 @@ def main():
     help="Overwrite existing database",
 )
 def init(base_dir: Path | None, force: bool):
-    """Initialize a new PressAssistCMS site.
+    """Initialize a new ChelCheleh CMS site.
 
     Creates the database, default content, and admin credentials.
     """
@@ -66,7 +66,7 @@ def init(base_dir: Path | None, force: bool):
 
     # Display results
     click.echo()
-    click.echo(click.style("PressAssistCMS initialized successfully!", fg="green", bold=True))
+    click.echo(click.style("ChelCheleh CMS initialized successfully!", fg="green", bold=True))
     click.echo()
     click.echo(click.style("=" * 60, fg="yellow"))
     click.echo(click.style("IMPORTANT: Save these credentials securely!", fg="yellow", bold=True))
@@ -120,7 +120,7 @@ def init(base_dir: Path | None, force: bool):
     help="Base directory for the site",
 )
 def run(host: str, port: int, reload: bool, workers: int, base_dir: Path | None):
-    """Start the PressAssistCMS server."""
+    """Start the ChelCheleh CMS server."""
     import uvicorn
 
     if base_dir is None:
@@ -135,7 +135,7 @@ def run(host: str, port: int, reload: bool, workers: int, base_dir: Path | None)
         )
         sys.exit(1)
 
-    click.echo(f"Starting PressAssistCMS on http://{host}:{port}")
+    click.echo(f"Starting ChelCheleh CMS on http://{host}:{port}")
 
     uvicorn.run(
         "pressassist.main:app",
@@ -247,6 +247,58 @@ def restore(backup_file: Path, base_dir: Path | None, force: bool):
                 )
                 sys.exit(1)
 
+        # Validate database structure before restoring
+        try:
+            import json
+            with zf.open("db.json") as db_file:
+                db_data = json.load(db_file)
+
+            # Validate required keys
+            required_keys = {"config", "pages", "users"}
+            missing_keys = required_keys - set(db_data.keys())
+            if missing_keys:
+                click.echo(
+                    click.style("Error: ", fg="red")
+                    + f"Invalid backup structure: missing {', '.join(missing_keys)}"
+                )
+                sys.exit(1)
+
+            # Validate config has required fields
+            config_data = db_data.get("config", {})
+            if "login_slug" not in config_data:
+                click.echo(
+                    click.style("Error: ", fg="red")
+                    + "Invalid backup: config missing login_slug"
+                )
+                sys.exit(1)
+
+            # Validate admin user exists
+            users_data = db_data.get("users", {})
+            if "admin" not in users_data:
+                click.echo(
+                    click.style("Error: ", fg="red")
+                    + "Invalid backup: missing admin user"
+                )
+                sys.exit(1)
+
+            # Validate admin has password_hash
+            admin_data = users_data.get("admin", {})
+            if "password_hash" not in admin_data:
+                click.echo(
+                    click.style("Error: ", fg="red")
+                    + "Invalid backup: admin user missing password_hash"
+                )
+                sys.exit(1)
+
+            click.echo(click.style("Backup validation passed.", fg="green"))
+
+        except json.JSONDecodeError as e:
+            click.echo(
+                click.style("Error: ", fg="red")
+                + f"Invalid backup: db.json is not valid JSON ({e})"
+            )
+            sys.exit(1)
+
         config.ensure_directories()
 
         # Extract database
@@ -332,7 +384,7 @@ def check(base_dir: Path | None):
 
     config = AppConfig(base_dir=base_dir)
 
-    click.echo("PressAssistCMS Configuration Check")
+    click.echo("ChelCheleh CMS Configuration Check")
     click.echo("=" * 40)
     click.echo()
 

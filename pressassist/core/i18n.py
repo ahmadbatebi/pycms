@@ -1,4 +1,4 @@
-"""Internationalization (i18n) support for PressAssistCMS."""
+"""Internationalization (i18n) support for ChelCheleh CMS."""
 
 import json
 from pathlib import Path

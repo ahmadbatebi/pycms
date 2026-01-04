@@ -75,6 +75,16 @@ class AppConfig(BaseModel):
         return self.data_dir / "audit.log"
 
     @property
+    def sessions_file(self) -> Path:
+        """Path to sessions storage file."""
+        return self.data_dir / "sessions.json"
+
+    @property
+    def rate_limit_file(self) -> Path:
+        """Path to rate limit storage file."""
+        return self.data_dir / "rate_limits.json"
+
+    @property
     def max_upload_size_bytes(self) -> int:
         """Maximum upload size in bytes."""
         return self.max_upload_size_mb * 1024 * 1024
@@ -96,22 +106,45 @@ class AppConfig(BaseModel):
 
         Returns:
             AppConfig instance.
+
+        Raises:
+            ValueError: If environment variable values are invalid.
         """
         if base_dir is None:
             base_dir = Path(os.getenv("PRESSASSIST_BASE_DIR", Path.cwd()))
 
+        # Parse and validate environment variables
+        def get_int_env(name: str, default: int, min_val: int, max_val: int) -> int:
+            """Parse and validate integer environment variable."""
+            value_str = os.getenv(name, str(default))
+            try:
+                value = int(value_str)
+            except ValueError:
+                raise ValueError(f"{name} must be an integer, got: {value_str}")
+            if value < min_val or value > max_val:
+                raise ValueError(f"{name} must be between {min_val} and {max_val}, got: {value}")
+            return value
+
+        port = get_int_env("PRESSASSIST_PORT", 8000, 1, 65535)
+        workers = get_int_env("PRESSASSIST_WORKERS", 1, 1, 32)
+        session_lifetime_hours = get_int_env("PRESSASSIST_SESSION_HOURS", 4, 1, 168)
+        rate_limit_attempts = get_int_env("PRESSASSIST_RATE_LIMIT_ATTEMPTS", 5, 1, 100)
+        rate_limit_window_minutes = get_int_env("PRESSASSIST_RATE_LIMIT_WINDOW", 15, 1, 1440)
+        password_min_length = get_int_env("PRESSASSIST_PASSWORD_MIN_LENGTH", 12, 8, 128)
+        max_upload_size_mb = get_int_env("PRESSASSIST_MAX_UPLOAD_MB", 5, 1, 100)
+
         return cls(
             base_dir=base_dir,
             host=os.getenv("PRESSASSIST_HOST", "127.0.0.1"),
-            port=int(os.getenv("PRESSASSIST_PORT", "8000")),
+            port=port,
             debug=os.getenv("PRESSASSIST_DEBUG", "false").lower() == "true",
-            workers=int(os.getenv("PRESSASSIST_WORKERS", "1")),
+            workers=workers,
             secret_key=os.getenv("PRESSASSIST_SECRET_KEY", secrets.token_hex(32)),
-            session_lifetime_hours=int(os.getenv("PRESSASSIST_SESSION_HOURS", "4")),
-            rate_limit_attempts=int(os.getenv("PRESSASSIST_RATE_LIMIT_ATTEMPTS", "5")),
-            rate_limit_window_minutes=int(os.getenv("PRESSASSIST_RATE_LIMIT_WINDOW", "15")),
-            password_min_length=int(os.getenv("PRESSASSIST_PASSWORD_MIN_LENGTH", "12")),
-            max_upload_size_mb=int(os.getenv("PRESSASSIST_MAX_UPLOAD_MB", "5")),
+            session_lifetime_hours=session_lifetime_hours,
+            rate_limit_attempts=rate_limit_attempts,
+            rate_limit_window_minutes=rate_limit_window_minutes,
+            password_min_length=password_min_length,
+            max_upload_size_mb=max_upload_size_mb,
             allow_html_content=os.getenv("PRESSASSIST_ALLOW_HTML", "false").lower() == "true",
         )
 

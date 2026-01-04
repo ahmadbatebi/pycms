@@ -4,6 +4,8 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
+from .logging import hooks_logger as logger
+
 
 @dataclass
 class Hook:
@@ -146,8 +148,10 @@ class HookManager:
                     payload = result
             except Exception as e:
                 # Log but don't break the chain
-                # In production, this should use proper logging
-                print(f"Hook error in {hook.plugin or 'unknown'}:{event}: {e}")
+                logger.error(
+                    f"Hook error in {hook.plugin or 'unknown'}:{event}: {e}",
+                    exc_info=True
+                )
 
         return payload
 
@@ -178,7 +182,10 @@ class HookManager:
                 if result is not None:
                     results.append(result)
             except Exception as e:
-                print(f"Hook error in {hook.plugin or 'unknown'}:{event}: {e}")
+                logger.error(
+                    f"Hook error in {hook.plugin or 'unknown'}:{event}: {e}",
+                    exc_info=True
+                )
 
         return results
 

@@ -1,4 +1,4 @@
-"""Admin module for PressAssistCMS."""
+"""Admin module for ChelCheleh CMS."""
 
 from .routes import router
 

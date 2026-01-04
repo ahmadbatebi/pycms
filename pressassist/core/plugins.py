@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from .hooks import HookManager, hook_manager
+from .logging import plugins_logger as logger
 
 
 @dataclass
@@ -122,8 +123,13 @@ class PluginManager:
             if "name" not in data:
                 return None
 
-            # Validate permissions
+            # Validate permissions and warn about invalid ones
             permissions = data.get("permissions", [])
+            invalid_permissions = [p for p in permissions if p not in self.VALID_PERMISSIONS]
+            if invalid_permissions:
+                logger.warning(
+                    f"Plugin '{plugin_dir.name}' requested invalid permissions: {invalid_permissions}"
+                )
             valid_permissions = [p for p in permissions if p in self.VALID_PERMISSIONS]
 
             return PluginInfo(
@@ -206,8 +212,8 @@ class PluginManager:
         if module and hasattr(module, "on_unload"):
             try:
                 module.on_unload()
-            except Exception:
-                pass  # Ignore unload errors
+            except Exception as e:
+                logger.warning(f"Error during unload of plugin '{plugin_name}': {e}")
 
         # Remove hooks registered by this plugin
         self.hooks.unregister_plugin(plugin_name)
@@ -232,7 +238,7 @@ class PluginManager:
                         loaded += 1
                 except PluginError as e:
                     # Log but continue loading others
-                    print(f"Failed to load plugin {plugin.directory}: {e}")
+                    logger.error(f"Failed to load plugin '{plugin.directory}': {e}")
         return loaded
 
     def enable_plugin(self, plugin_name: str) -> bool:
@@ -318,10 +324,19 @@ class PluginAPI:
 
         Returns:
             True if registered.
+
+        Raises:
+            PermissionError: If plugin lacks permission for this hook.
         """
         permission = f"hook:{event}"
         if permission not in self.permissions:
-            return False
+            logger.warning(
+                f"Plugin '{self.plugin_name}' tried to register hook for "
+                f"'{event}' without permission '{permission}'"
+            )
+            raise PermissionError(
+                f"Plugin '{self.plugin_name}' lacks permission for hook: {event}"
+            )
 
         self._hooks.register(
             event=event,

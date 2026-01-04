@@ -27,6 +27,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.force_https = force_https
         self.csp = self._build_csp(csp_directives)
+        admin_csp = dict(csp_directives or {})
+        admin_csp.setdefault("script-src", "'self' 'unsafe-inline'")
+        self.admin_csp = self._build_csp(admin_csp)
 
     def _build_csp(self, custom: dict[str, str] | None) -> str:
         """Build Content-Security-Policy header value.
@@ -87,7 +90,10 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
 
         # Content Security Policy
-        response.headers["Content-Security-Policy"] = self.csp
+        if "/admin" in request.url.path:
+            response.headers["Content-Security-Policy"] = self.admin_csp
+        else:
+            response.headers["Content-Security-Policy"] = self.csp
 
         # HSTS for HTTPS
         if self.force_https:

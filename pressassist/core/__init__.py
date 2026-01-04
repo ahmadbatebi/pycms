@@ -1,4 +1,4 @@
-"""Core modules for PressAssistCMS."""
+"""Core modules for ChelCheleh CMS."""
 
 from .storage import Storage
 from .config import Config

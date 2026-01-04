@@ -183,6 +183,12 @@ img {
     color: var(--color-bg);
 }
 
+.cms-footer {
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    opacity: 0.8;
+}
+
 /* Error Page */
 .error-page {
     text-align: center;
