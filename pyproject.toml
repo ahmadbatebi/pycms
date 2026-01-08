@@ -33,10 +33,11 @@ dependencies = [
     "python-multipart>=0.0.6",
     "itsdangerous>=2.1.0",
     "bcrypt>=4.0.0",
-    "bleach>=6.1.0",
+    "bleach[css]>=6.1.0",
     "markdown-it-py>=3.0.0",
     "pyyaml>=6.0",
     "pillow>=10.0.0",
+    "jdatetime>=4.1.0",
 ]
 
 [project.optional-dependencies]

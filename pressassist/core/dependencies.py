@@ -1,4 +1,4 @@
-"""FastAPI dependency injection system for ChelCheleh CMS.
+"""FastAPI dependency injection system for ChelCheleh.
 
 This module provides a clean dependency injection pattern that replaces
 global state with proper FastAPI dependencies. This makes testing easier
@@ -202,13 +202,13 @@ def require_role(allowed_roles: list[Role]):
 
 
 def require_admin():
-    """Require admin role."""
-    return require_role([Role.ADMIN])
+    """Require admin or super_admin role."""
+    return require_role([Role.SUPER_ADMIN, Role.ADMIN])
 
 
 def require_editor():
-    """Require editor or admin role."""
-    return require_role([Role.ADMIN, Role.EDITOR])
+    """Require editor, admin, or super_admin role."""
+    return require_role([Role.SUPER_ADMIN, Role.ADMIN, Role.EDITOR])
 
 
 async def get_client_info(request: Request) -> dict:

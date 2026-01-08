@@ -155,20 +155,329 @@ img {
     border-bottom: 2px solid var(--color-primary);
 }
 
+/* User menu in navigation */
+.main-nav .user-menu {
+    margin-left: 0.5rem;
+    padding-left: 1rem;
+    border-left: 1px solid var(--color-border);
+}
+
+.main-nav .user-profile-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    background: var(--color-primary);
+    color: white !important;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    transition: background-color 0.2s;
+}
+
+.main-nav .user-profile-link:hover {
+    background: var(--color-primary-dark, #1d4ed8);
+}
+
+.main-nav .user-profile-link svg {
+    flex-shrink: 0;
+}
+
+.main-nav .logout-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem;
+    color: var(--color-text-light) !important;
+    border-radius: 50%;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.main-nav .logout-link:hover {
+    background: #fee2e2;
+    color: #dc2626 !important;
+}
+
+/* RTL support for user menu */
+[dir="rtl"] .main-nav .user-menu {
+    margin-left: 0;
+    margin-right: 0.5rem;
+    padding-left: 0;
+    padding-right: 1rem;
+    border-left: none;
+    border-right: 1px solid var(--color-border);
+}
+
+/* Header layout */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+/* Language Switcher */
+.language-switcher {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    background: #111a2c00;
+    border-radius: 6px;
+}
+
+.language-switcher .lang-link {
+    display: flex;
+    align-items: center;
+    padding: 0.4rem 0.6rem;
+    color: var(--color-text-light);
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.language-switcher .lang-link svg,
+.language-switcher .lang-link img.lang-flag {
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+    vertical-align: middle;
+}
+
+.language-switcher .lang-link:hover {
+    color: var(--color-text);
+    background: var(--color-bg);
+    text-decoration: none;
+}
+
+.language-switcher .lang-link:hover svg,
+.language-switcher .lang-link:hover img.lang-flag {
+    opacity: 1;
+}
+
+.language-switcher .lang-link.active {
+    color: var(--color-bg);
+    background: #f3f5f6;
+}
+
+.language-switcher .lang-link.active svg,
+.language-switcher .lang-link.active img.lang-flag {
+    opacity: 1;
+}
+
 /* Main Content */
 .site-main {
     padding: 3rem 0;
     min-height: 60vh;
 }
 
+/* Two-column layout: content + sidebar */
+.main-layout {
+    display: block;
+}
+
+/* LTR (English): content LEFT, sidebar RIGHT */
+.main-layout.has-sidebar {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 2.5rem;
+    align-items: start;
+}
+
+.main-content {
+    min-width: 0;
+}
+
+/* Sidebar in content area */
+.site-sidebar {
+    background: var(--color-bg-alt);
+    padding: 1.5rem;
+    border-radius: 8px;
+    position: sticky;
+    top: 2rem;
+}
+
+.site-sidebar h3,
+.site-sidebar h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    color: var(--color-text);
+}
+
+.site-sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.site-sidebar ul li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.site-sidebar ul li:last-child {
+    border-bottom: none;
+}
+
+/* RTL (Persian): content RIGHT, sidebar LEFT
+   In RTL, grid flows right-to-left automatically.
+   So "1fr 320px" means: content (1fr) on RIGHT, sidebar (320px) on LEFT */
+[dir="rtl"] .main-layout.has-sidebar {
+    direction: ltr; /* Reset to LTR for grid layout */
+}
+
+[dir="rtl"] .main-layout.has-sidebar .main-content {
+    direction: rtl; /* Restore RTL for content */
+    order: 1;
+}
+
+[dir="rtl"] .main-layout.has-sidebar .site-sidebar {
+    direction: rtl; /* Restore RTL for sidebar */
+    order: 2;
+}
+
+/* Responsive: sidebar below content on mobile */
+@media (max-width: 992px) {
+    .main-layout.has-sidebar {
+        grid-template-columns: 1fr;
+    }
+
+    [dir="rtl"] .main-layout.has-sidebar {
+        grid-template-columns: 1fr;
+    }
+
+    .main-layout.has-sidebar .main-content,
+    .main-layout.has-sidebar .site-sidebar,
+    [dir="rtl"] .main-layout.has-sidebar .main-content,
+    [dir="rtl"] .main-layout.has-sidebar .site-sidebar {
+        order: unset;
+    }
+
+    .site-sidebar {
+        position: static;
+        margin-top: 2rem;
+    }
+}
+
 .page-content h1:first-child {
     margin-top: 0;
 }
 
-/* Sidebar */
-.site-sidebar {
+/* Alignment helpers for editor output */
+.text-align-right { text-align: right; }
+.text-align-left { text-align: left; }
+.text-align-center { text-align: center; }
+.text-align-justify { text-align: justify; }
+
+/* Image and media alignment */
+.image-align-left,
+figure.image-align-left,
+.page-content figure.image-align-left {
+    float: left !important;
+    margin-right: 1.5em !important;
+    margin-left: 0 !important;
+    margin-bottom: 1em;
+    clear: left;
+}
+
+.image-align-right,
+figure.image-align-right,
+.page-content figure.image-align-right {
+    float: right !important;
+    margin-left: 1.5em !important;
+    margin-right: 0 !important;
+    margin-bottom: 1em;
+    clear: right;
+}
+
+.image-align-center,
+figure.image-align-center,
+.page-content figure.image-align-center {
+    float: none !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    margin-bottom: 1em;
+    display: block !important;
+    text-align: center;
+}
+
+/* Media embeds */
+.page-content figure.media,
+.page-content .media {
+    margin: 1.5em 0;
+    clear: both;
+}
+
+.page-content figure.media.image-align-left,
+.page-content .media.image-align-left {
+    float: left !important;
+    margin-right: 1.5em !important;
+    margin-left: 0 !important;
+    max-width: 50%;
+}
+
+.page-content figure.media.image-align-right,
+.page-content .media.image-align-right {
+    float: right !important;
+    margin-left: 1.5em !important;
+    margin-right: 0 !important;
+    max-width: 50%;
+}
+
+.page-content figure.media.image-align-center,
+.page-content .media.image-align-center {
+    float: none !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    max-width: 100%;
+}
+
+/* Ensure images and iframes never exceed container width */
+.page-content img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+.page-content figure {
+    max-width: 100% !important;
+    box-sizing: border-box;
+}
+
+.page-content figure img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+.page-content iframe {
+    max-width: 100% !important;
+    border: none;
+}
+
+/* Override inline width if it exceeds container */
+.page-content img[style*="width"],
+.page-content figure[style*="width"] {
+    max-width: 100% !important;
+}
+
+.page-content figure[style*="width"] img {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Figure captions */
+.page-content figure figcaption {
+    text-align: center;
+    color: var(--color-text-light);
+    font-size: 0.9em;
+    margin-top: 0.5em;
+    padding: 0.5em;
     background: var(--color-bg-alt);
-    padding: 2rem 0;
+    border-radius: 0 0 4px 4px;
+}
+
+/* Clear floats after content */
+.page-content::after {
+    content: "";
+    display: table;
+    clear: both;
 }
 
 /* Footer */

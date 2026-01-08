@@ -2,12 +2,73 @@
 
 import json
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+import jdatetime
 from jinja2 import Environment, FileSystemLoader, select_autoescape, TemplateNotFound
 
 from .sanitize import Sanitizer
+
+
+def to_persian_numerals(text: str) -> str:
+    """Convert English numerals to Persian numerals.
+
+    Args:
+        text: String containing English numerals.
+
+    Returns:
+        String with Persian numerals.
+    """
+    persian_digits = "۰۱۲۳۴۵۶۷۸۹"
+    result = ""
+    for char in str(text):
+        if char.isdigit():
+            result += persian_digits[int(char)]
+        else:
+            result += char
+    return result
+
+
+def jalali_date(value: str, lang: str = "en") -> str:
+    """Convert a date string to Jalali (Persian) calendar format.
+
+    Args:
+        value: Date string in ISO format (e.g., "2026-01-05" or "2026-01-05T12:00:00")
+        lang: Language code ("fa" for Persian/Jalali, otherwise Gregorian)
+
+    Returns:
+        Formatted date string.
+    """
+    if not value:
+        return ""
+
+    try:
+        # Parse the date string
+        if "T" in value:
+            dt = datetime.fromisoformat(value.replace("Z", "+00:00").split("+")[0])
+        else:
+            dt = datetime.fromisoformat(value)
+
+        if lang == "fa":
+            # Convert to Jalali
+            jd = jdatetime.date.fromgregorian(date=dt.date())
+            # Persian month names
+            months = [
+                "", "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
+                "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
+            ]
+            # Convert numbers to Persian numerals
+            day = to_persian_numerals(jd.day)
+            year = to_persian_numerals(jd.year)
+            return f"{day} {months[jd.month]} {year}"
+        else:
+            # Return Gregorian format
+            return dt.strftime("%Y-%m-%d")
+    except (ValueError, TypeError, AttributeError):
+        # If parsing fails, return original value
+        return value[:10] if len(value) >= 10 else value
 
 
 @dataclass
@@ -34,12 +95,27 @@ class CMSContext:
     site_lang: str = "en"
     theme: str = "default"
 
+    # Language settings
+    lang_direction: str = "ltr"  # 'ltr' or 'rtl'
+    current_language: str = "en"  # Current display language
+    available_languages: list[dict] = field(default_factory=list)  # [{code, name, native_name, direction}]
+
     # Current page
     page_title: str = ""
     page_slug: str = ""
     page_content: str = ""  # Rendered HTML
     page_description: str = ""
     page_keywords: str = ""
+    page_template: str = "default"  # Template name (light, dark, mixed, default)
+    hide_title: bool = False  # Hide title in frontend
+    hide_description: bool = False  # Hide description in frontend
+    blog_columns: int = 2  # Number of columns for blog posts (1, 2, or 3)
+    posts_per_page: int = 10  # Number of blog posts per page
+
+    # Pagination for blog posts
+    blog_current_page: int = 1
+    blog_total_pages: int = 1
+    blog_total_posts: int = 0
 
     # Navigation
     menu_items: list[dict] = field(default_factory=list)
@@ -51,6 +127,7 @@ class CMSContext:
     is_admin: bool = False
     is_editor: bool = False
     user: str | None = None
+    user_display_name: str | None = None
 
     # Admin panel HTML (only for logged in users)
     admin_panel: str = ""
@@ -60,6 +137,26 @@ class CMSContext:
 
     # Flash messages
     alerts: list[dict] = field(default_factory=list)
+
+    # Blog posts for this page
+    blog_posts: list[dict] = field(default_factory=list)
+
+    # Copyright text
+    copyright_text: str = ""
+
+    # Search settings
+    search_enabled: bool = True
+    search_placeholder: str = "Search..."
+    search_hint: str = "Type to search..."
+    search_no_results: str = "No results found"
+    search_navigate: str = "Navigate"
+    search_select: str = "Select"
+    search_close: str = "Close"
+    search_type_page: str = "Page"
+    search_type_blog: str = "Post"
+
+    # Jump to Top button
+    jump_to_top_enabled: bool = True
 
     # Theme asset helper (set by ThemeManager)
     _asset_prefix: str = ""
@@ -74,6 +171,17 @@ class CMSContext:
             Full URL to asset.
         """
         return f"{self._asset_prefix}/{path}"
+
+    def lang_url(self, lang_code: str) -> str:
+        """Get URL for switching to a different language.
+
+        Args:
+            lang_code: Target language code.
+
+        Returns:
+            URL with lang parameter.
+        """
+        return f"?lang={lang_code}"
 
 
 class ThemeManager:
@@ -94,7 +202,7 @@ class ThemeManager:
         """
         self.themes_dir = themes_dir
         self.fallback_dir = fallback_dir
-        self.active_theme = active_theme
+        self.active_theme = self._resolve_theme_dir(active_theme)
         self._env: Environment | None = None
         self._theme_info: ThemeInfo | None = None
         self.sanitizer = Sanitizer()
@@ -113,6 +221,44 @@ class ThemeManager:
     def static_path(self) -> Path:
         """Get path to active theme's static files."""
         return self.theme_path / "static"
+
+    def _resolve_theme_dir(self, theme: str) -> str:
+        """Resolve a theme name to its directory.
+
+        Allows matching by directory name or theme.json display name.
+        Falls back to "default" when available.
+        """
+        theme = (theme or "").strip()
+        if not theme:
+            theme = "default"
+
+        direct_path = self.themes_dir / theme
+        if direct_path.exists():
+            return theme
+
+        if self.themes_dir.exists():
+            for entry in self.themes_dir.iterdir():
+                if entry.is_dir() and entry.name.lower() == theme.lower():
+                    return entry.name
+
+            for entry in self.themes_dir.iterdir():
+                if not entry.is_dir():
+                    continue
+                json_path = entry / "theme.json"
+                if not json_path.exists():
+                    continue
+                try:
+                    with open(json_path, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                    if str(data.get("name", "")).lower() == theme.lower():
+                        return entry.name
+                except (json.JSONDecodeError, OSError):
+                    continue
+
+        if (self.themes_dir / "default").exists():
+            return "default"
+
+        return theme
 
     def get_theme_info(self) -> ThemeInfo:
         """Load and return theme metadata.
@@ -175,6 +321,7 @@ class ThemeManager:
 
         # Add custom filters
         self._env.filters["render_markdown"] = self.sanitizer.render_markdown
+        self._env.filters["jalali_date"] = jalali_date
 
         return self._env
 
@@ -184,7 +331,7 @@ class ThemeManager:
         Args:
             theme: Theme directory name.
         """
-        self.active_theme = theme
+        self.active_theme = self._resolve_theme_dir(theme)
         self._env = None
         self._theme_info = None
 
@@ -192,6 +339,7 @@ class ThemeManager:
         self,
         template_name: str,
         context: CMSContext,
+        allow_fallback: bool = True,
         **extra: Any,
     ) -> str:
         """Render a template with context.
@@ -209,6 +357,8 @@ class ThemeManager:
         try:
             template = env.get_template(template_name)
         except TemplateNotFound:
+            if not allow_fallback:
+                raise
             # Try base template as fallback
             template = env.get_template("base.html")
 
@@ -227,6 +377,12 @@ class ThemeManager:
                 "description": context.page_description,
                 "keywords": context.page_keywords,
             },
+            "lang": {
+                "code": context.current_language,
+                "direction": context.lang_direction,
+                "is_rtl": context.lang_direction == "rtl",
+                "available": context.available_languages,
+            },
             "menu": context.menu_items,
             "blocks": context.blocks,
             "is_admin": context.is_admin,
@@ -242,7 +398,11 @@ class ThemeManager:
     def render_page(self, context: CMSContext) -> str:
         """Render a page using the page template.
 
-        First tries {slug}.html, then page.html, then base.html.
+        Template resolution order:
+        1. {slug}.html (page-specific template)
+        2. page-{template}.html (selected template: light, dark, mixed)
+        3. page.html (default page template)
+        4. base.html (fallback)
 
         Args:
             context: CMSContext with page data.
@@ -252,16 +412,27 @@ class ThemeManager:
         """
         env = self.get_env()
 
-        # Try page-specific template
+        # Normalize template name
+        template = (context.page_template or "default").strip().lower()
+        if template not in {"default", "light", "dark", "mixed"}:
+            template = "default"
+        context.page_template = template
+
+        # Build list of templates to try
         templates_to_try = [
             f"{context.page_slug}.html",
-            "page.html",
-            "base.html",
         ]
+
+        # Add selected template if not default
+        if context.page_template != "default":
+            templates_to_try.append(f"page-{context.page_template}.html")
+
+        # Always try page.html and base.html as fallbacks
+        templates_to_try.extend(["page.html", "base.html"])
 
         for template_name in templates_to_try:
             try:
-                return self.render(template_name, context)
+                return self.render(template_name, context, allow_fallback=False)
             except TemplateNotFound:
                 continue
 
@@ -277,9 +448,9 @@ class ThemeManager:
             Rendered HTML.
         """
         try:
-            return self.render("404.html", context)
+            return self.render("404.html", context, allow_fallback=False)
         except TemplateNotFound:
-            return self.render("page.html", context)
+            return self.render("page.html", context, allow_fallback=True)
 
     def list_themes(self) -> list[ThemeInfo]:
         """List all available themes.

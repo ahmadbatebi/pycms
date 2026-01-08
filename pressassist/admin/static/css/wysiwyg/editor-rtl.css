@@ -1,0 +1,249 @@
+/**
+ * CKEditor 5 RTL Styles for ChelCheleh
+ * Right-to-left support for Persian/Farsi language
+ */
+
+/* Editor content direction */
+.ck.ck-editor__editable {
+    direction: rtl;
+    text-align: right;
+}
+
+/* Toolbar RTL */
+.ck.ck-toolbar {
+    direction: rtl;
+}
+
+/* Toolbar items spacing for RTL */
+.ck.ck-toolbar > .ck-toolbar__items {
+    flex-direction: row-reverse;
+}
+
+/* Reset separator positioning */
+.ck.ck-toolbar__separator {
+    margin-left: 8px !important;
+    margin-right: 8px !important;
+}
+
+/* Dropdown panels RTL */
+.ck.ck-dropdown__panel {
+    direction: rtl;
+}
+
+/* List items in RTL */
+.ck.ck-list {
+    direction: rtl;
+}
+
+/* Button text alignment */
+.ck.ck-button__label {
+    text-align: right;
+}
+
+/* List styling for RTL content */
+.ck-content ul,
+.ck-content ol {
+    padding-right: 24px;
+    padding-left: 0;
+    margin-right: 0;
+    margin-left: 0;
+}
+
+.ck-content ul {
+    list-style-position: inside;
+}
+
+.ck-content ol {
+    list-style-position: inside;
+}
+
+/* Nested lists */
+.ck-content ul ul,
+.ck-content ul ol,
+.ck-content ol ul,
+.ck-content ol ol {
+    padding-right: 20px;
+    padding-left: 0;
+}
+
+/* Blockquote border on right side for RTL */
+.ck-content blockquote {
+    border-left: none;
+    border-right: 4px solid #7c3aed;
+    padding-right: 16px;
+    padding-left: 0;
+    margin-right: 0;
+    margin-left: 24px;
+    border-radius: 0 8px 8px 0;
+}
+
+/* Table cell alignment for RTL */
+.ck-content table td,
+.ck-content table th {
+    text-align: right;
+}
+
+/* Figure caption alignment */
+.ck-content figure.image figcaption {
+    text-align: center;
+}
+
+/* Image alignment classes for RTL */
+.ck-content .image-style-side {
+    float: left;
+    margin-left: 0;
+    margin-right: 1.5em;
+}
+
+.ck-content .image-style-align-left {
+    float: right;
+    margin-right: 0;
+    margin-left: 1.5em;
+}
+
+.ck-content .image-style-align-right {
+    float: left;
+    margin-left: 0;
+    margin-right: 1.5em;
+}
+
+/* Input fields RTL */
+.ck.ck-input {
+    direction: rtl;
+    text-align: right;
+}
+
+/* Labeled fields RTL */
+.ck.ck-labeled-field-view {
+    direction: rtl;
+}
+
+.ck.ck-labeled-field-view__label {
+    text-align: right;
+}
+
+/* Dialog RTL */
+.ck.ck-dialog {
+    direction: rtl;
+}
+
+.ck.ck-dialog__title {
+    text-align: right;
+}
+
+/* Form layout RTL */
+.ck.ck-form__row {
+    direction: rtl;
+}
+
+/* Color picker RTL */
+.ck.ck-color-grid {
+    direction: rtl;
+}
+
+/* Balloon panel RTL */
+.ck.ck-balloon-panel {
+    direction: rtl;
+}
+
+/* Link form RTL */
+.ck.ck-link-form {
+    direction: rtl;
+}
+
+/* Image caption input RTL */
+.ck.ck-input.ck-image-caption-input {
+    direction: rtl;
+    text-align: right;
+}
+
+/* Source editing textarea RTL */
+.ck-source-editing-area textarea {
+    direction: ltr; /* Code should remain LTR */
+    text-align: left;
+}
+
+/* Tooltip RTL */
+.ck.ck-tooltip {
+    direction: rtl;
+}
+
+/* Table properties form RTL */
+.ck.ck-table-form {
+    direction: rtl;
+}
+
+/* Split button arrow position for RTL */
+.ck.ck-splitbutton > .ck-splitbutton__arrow {
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+    border-left: none;
+}
+
+/* Dropdown arrow icon flip for RTL */
+.ck.ck-dropdown__button .ck-dropdown__arrow {
+    margin-right: 8px;
+    margin-left: 0;
+}
+
+/* Persian font stack */
+.ck.ck-editor__editable,
+.ck.ck-balloon-panel,
+.ck.ck-dropdown__panel,
+.ck.ck-dialog {
+    font-family: 'Vazirmatn', 'IRANSans', 'Tahoma', 'Arial', sans-serif;
+}
+
+/* Fix placeholder for RTL */
+.ck.ck-editor__editable.ck-placeholder::before {
+    right: 24px;
+    left: auto;
+}
+
+/* Context menu RTL */
+.ck.ck-context-menu {
+    direction: rtl;
+}
+
+/* Table toolbar RTL adjustments */
+.ck .ck-widget__type-around__button {
+    direction: ltr; /* Keep insert buttons consistent */
+}
+
+/* Indent buttons behavior note:
+   In RTL, indent increases margin-right and outdent decreases it.
+   CKEditor handles this automatically when content direction is RTL. */
+
+/* Fix for mixed content (LTR within RTL) */
+.ck-content [dir="ltr"] {
+    direction: ltr;
+    text-align: left;
+}
+
+/* Alignment classes for RTL */
+.ck-content .text-align-right {
+    text-align: right;
+}
+
+.ck-content .text-align-left {
+    text-align: left;
+}
+
+.ck-content .text-align-center {
+    text-align: center;
+}
+
+.ck-content .text-align-justify {
+    text-align: justify;
+}
+
+/* Media embed RTL */
+.ck-content .media {
+    direction: ltr; /* Embeds should remain LTR */
+}
+
+/* Responsive RTL adjustments */
+@media (max-width: 768px) {
+    .ck.ck-toolbar > .ck-toolbar__items {
+        justify-content: flex-end;
+    }
+}

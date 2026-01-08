@@ -1,8 +1,18 @@
-"""Internationalization (i18n) support for ChelCheleh CMS."""
+"""Internationalization (i18n) support for ChelCheleh."""
 
 import json
 from pathlib import Path
 from typing import Any
+
+from .languages import (
+    DEFAULT_LANGUAGE,
+    SUPPORTED_LANGUAGES,
+    Language,
+    get_direction,
+    get_language,
+    is_rtl,
+    get_available_languages as get_langs,
+)
 
 
 class I18n:
@@ -97,6 +107,39 @@ class I18n:
 
         return text
 
+    def get(self, key: str, lang: str | None = None, **kwargs: Any) -> str:
+        """Get translation for a key in a specific language.
+
+        Args:
+            key: Translation key (e.g., 'search.placeholder').
+            lang: Language code. If None, uses current language.
+            **kwargs: Variables for string formatting.
+
+        Returns:
+            Translated string or key if not found.
+        """
+        target_lang = lang or self._current_lang
+
+        # Try target language
+        text = self._get_translation(target_lang, key)
+
+        # Fallback to default language
+        if text is None and target_lang != self.default_lang:
+            text = self._get_translation(self.default_lang, key)
+
+        # Use key as fallback
+        if text is None:
+            return key
+
+        # Format with variables
+        if kwargs:
+            try:
+                return text.format(**kwargs)
+            except KeyError:
+                return text
+
+        return text
+
     def _get_translation(self, lang: str, key: str) -> str | None:
         """Get translation for a key in a specific language.
 
@@ -130,6 +173,36 @@ class I18n:
         """Get current language code."""
         return self._current_lang
 
+    @property
+    def current_direction(self) -> str:
+        """Get text direction for current language.
+
+        Returns:
+            'rtl' or 'ltr'.
+        """
+        return get_direction(self._current_lang)
+
+    @property
+    def is_rtl(self) -> bool:
+        """Check if current language is RTL.
+
+        Returns:
+            True if current language is RTL.
+        """
+        return is_rtl(self._current_lang)
+
+    def get_language_info(self, lang: str | None = None) -> Language | None:
+        """Get language metadata.
+
+        Args:
+            lang: Language code, or None for current language.
+
+        Returns:
+            Language object or None if not found.
+        """
+        code = lang or self._current_lang
+        return get_language(code)
+
     def get_available_languages(self) -> list[str]:
         """Get list of available language codes.
 
@@ -145,6 +218,18 @@ class I18n:
                 languages.append(f.stem)
 
         return languages if languages else [self.default_lang]
+
+    def get_languages_for_ui(self) -> list[dict]:
+        """Get languages with full metadata for UI display.
+
+        Returns:
+            List of language dicts with code, name, native_name, direction.
+        """
+        available = self.get_available_languages()
+        return [
+            lang for lang in get_langs()
+            if lang["code"] in available
+        ]
 
 
 # Global instance

@@ -1,4 +1,4 @@
-"""Centralized logging configuration for ChelCheleh CMS.
+"""Centralized logging configuration for ChelCheleh.
 
 This module provides a proper logging setup that replaces print() statements
 with structured logging that can be configured via environment variables.

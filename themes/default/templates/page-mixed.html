@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block html_attrs %} data-theme="mixed"{% endblock %}
+
+{% block theme_css %}
+<link rel="stylesheet" href="{{ cms.asset('css/template-mixed.css') }}">
+{% endblock %}
+
+{% block body_class %} class="template-mixed"{% endblock %}

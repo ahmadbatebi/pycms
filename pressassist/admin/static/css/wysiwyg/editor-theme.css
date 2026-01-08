@@ -1,0 +1,541 @@
+/**
+ * CKEditor 5 Purple Theme for ChelCheleh
+ * Custom styling to match the admin panel design
+ */
+
+/* CSS Variables for theming */
+:root {
+    --ck-color-base-focus: #7c3aed;
+    --ck-color-base-active: #6d28d9;
+    --ck-color-button-on-background: #ede9fe;
+    --ck-color-button-on-hover-background: #ddd6fe;
+    --ck-color-focus-border: #7c3aed;
+    --ck-color-text: #1e293b;
+    --ck-color-shadow-drop: rgba(124, 58, 237, 0.15);
+    --ck-color-toolbar-background: #faf5ff;
+    --ck-color-toolbar-border: #e2e8f0;
+    --ck-border-radius: 8px;
+    --ck-inner-shadow: none;
+    --ck-focus-ring: 2px solid var(--ck-color-focus-border);
+}
+
+/* Editor wrapper */
+.ck.ck-editor {
+    width: 100%;
+}
+
+/* Toolbar container - flexible for all screen sizes */
+.ck.ck-toolbar {
+    background: linear-gradient(to bottom, #faf5ff, #f3e8ff) !important;
+    border: 1px solid var(--ck-color-toolbar-border) !important;
+    border-radius: var(--ck-border-radius) var(--ck-border-radius) 0 0 !important;
+    padding: 6px 8px !important;
+    flex-wrap: wrap !important;
+    gap: 2px !important;
+    overflow: visible !important;
+}
+
+/* Toolbar items container */
+.ck.ck-toolbar__items {
+    flex-wrap: wrap !important;
+    gap: 2px !important;
+    overflow: visible !important;
+}
+
+/* Toolbar grouping for responsive behavior */
+.ck.ck-toolbar__grouped-dropdown {
+    flex-shrink: 0 !important;
+}
+
+/* Toolbar separator */
+.ck.ck-toolbar__separator {
+    background: #c4b5fd !important;
+    margin: 0 8px !important;
+}
+
+/* Toolbar line break */
+.ck.ck-toolbar__line-break {
+    width: 100% !important;
+    height: 8px !important;
+}
+
+/* Toolbar buttons - smaller for better fit */
+.ck.ck-button {
+    border-radius: 5px !important;
+    transition: all 0.15s ease !important;
+    min-width: 28px;
+    min-height: 28px;
+    padding: 4px !important;
+    flex-shrink: 0 !important;
+}
+
+.ck.ck-button:hover:not(.ck-disabled) {
+    background: var(--ck-color-button-on-hover-background) !important;
+}
+
+.ck.ck-button.ck-on {
+    background: var(--ck-color-button-on-background) !important;
+    color: #7c3aed !important;
+}
+
+.ck.ck-button.ck-on:hover {
+    background: var(--ck-color-button-on-hover-background) !important;
+}
+
+/* Button icons */
+.ck.ck-button .ck-icon {
+    color: #475569;
+}
+
+.ck.ck-button:hover .ck-icon,
+.ck.ck-button.ck-on .ck-icon {
+    color: #7c3aed !important;
+}
+
+/* Dropdown buttons */
+.ck.ck-dropdown__button {
+    border-radius: 6px !important;
+}
+
+.ck.ck-dropdown__button:hover {
+    background: var(--ck-color-button-on-hover-background) !important;
+}
+
+/* Dropdown panels */
+.ck.ck-dropdown__panel {
+    border-radius: 8px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid #e2e8f0 !important;
+    overflow: hidden;
+}
+
+/* List items in dropdowns */
+.ck.ck-list__item {
+    padding: 4px !important;
+}
+
+.ck.ck-button.ck-list-item-button {
+    border-radius: 4px !important;
+    padding: 8px 12px !important;
+}
+
+.ck.ck-button.ck-list-item-button:hover {
+    background: #f3e8ff !important;
+}
+
+.ck.ck-button.ck-list-item-button.ck-on {
+    background: #ede9fe !important;
+    color: #7c3aed !important;
+}
+
+/* Editor content area */
+.ck.ck-editor__main > .ck-editor__editable {
+    min-height: 350px;
+    max-height: 600px;
+    overflow-y: auto;
+    border: 1px solid var(--ck-color-toolbar-border) !important;
+    border-top: none !important;
+    border-radius: 0 0 var(--ck-border-radius) var(--ck-border-radius) !important;
+    padding: 20px 24px !important;
+    font-family: 'Vazirmatn', Tahoma, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--ck-color-text);
+    background: #ffffff;
+}
+
+/* Focus state for editor */
+.ck.ck-editor__main > .ck-editor__editable:focus,
+.ck.ck-editor__main > .ck-editor__editable.ck-focused {
+    border-color: var(--ck-color-focus-border) !important;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1) !important;
+    outline: none !important;
+}
+
+/* Placeholder text */
+.ck.ck-editor__editable.ck-placeholder::before {
+    color: #94a3b8 !important;
+    font-style: normal !important;
+}
+
+/* Headings in editor */
+.ck-content h1 {
+    font-size: 2em;
+    font-weight: 700;
+    margin: 0.67em 0;
+    color: #1e293b;
+}
+
+.ck-content h2 {
+    font-size: 1.5em;
+    font-weight: 600;
+    margin: 0.83em 0;
+    color: #334155;
+}
+
+.ck-content h3 {
+    font-size: 1.17em;
+    font-weight: 600;
+    margin: 1em 0;
+    color: #475569;
+}
+
+.ck-content h4,
+.ck-content h5,
+.ck-content h6 {
+    font-weight: 600;
+    margin: 1.33em 0;
+    color: #64748b;
+}
+
+/* Links */
+.ck-content a {
+    color: #7c3aed;
+    text-decoration: underline;
+}
+
+.ck-content a:hover {
+    color: #6d28d9;
+}
+
+/* Blockquote */
+.ck-content blockquote {
+    border-right: 4px solid #7c3aed;
+    padding-right: 16px;
+    margin-right: 0;
+    margin-left: 24px;
+    padding-left: 0;
+    font-style: italic;
+    color: #64748b;
+    background: #faf5ff;
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+}
+
+/* Code blocks */
+.ck-content code {
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    color: #7c3aed;
+}
+
+.ck-content pre {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+.ck-content pre code {
+    background: transparent;
+    padding: 0;
+    color: inherit;
+}
+
+/* Tables */
+.ck-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+}
+
+.ck-content table td,
+.ck-content table th {
+    border: 1px solid #e2e8f0;
+    padding: 10px 14px;
+}
+
+.ck-content table th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: #334155;
+}
+
+.ck-content table tr:nth-child(even) {
+    background: #fafafa;
+}
+
+/* Lists */
+.ck-content ul,
+.ck-content ol {
+    margin: 16px 0;
+    padding-right: 24px;
+    padding-left: 0;
+}
+
+.ck-content li {
+    margin: 8px 0;
+}
+
+/* Images */
+.ck-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.ck-content figure.image {
+    margin: 20px 0;
+}
+
+.ck-content figure.image figcaption {
+    text-align: center;
+    color: #64748b;
+    font-size: 0.9em;
+    margin-top: 8px;
+}
+
+/* Horizontal rule */
+.ck-content hr {
+    border: none;
+    border-top: 2px solid #e2e8f0;
+    margin: 24px 0;
+}
+
+/* Inline toolbar (balloon) */
+.ck.ck-balloon-panel {
+    border-radius: 8px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Color picker */
+.ck.ck-color-grid__tile {
+    border-radius: 4px !important;
+}
+
+.ck.ck-color-grid__tile:hover {
+    transform: scale(1.1);
+}
+
+/* Input fields in dialogs */
+.ck.ck-input {
+    border-radius: 6px !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 8px 12px !important;
+}
+
+.ck.ck-input:focus {
+    border-color: #7c3aed !important;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1) !important;
+}
+
+/* Labeled field */
+.ck.ck-labeled-field-view__label {
+    color: #475569 !important;
+    font-weight: 500 !important;
+}
+
+/* Dialog/Modal */
+.ck.ck-dialog {
+    border-radius: 12px !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Source editing textarea */
+.ck-source-editing-area textarea {
+    font-family: 'Courier New', monospace !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    background: #1e293b !important;
+    color: #e2e8f0 !important;
+    border-radius: 0 0 8px 8px !important;
+    padding: 16px !important;
+}
+
+/* Sticky toolbar on scroll */
+.ck.ck-sticky-panel .ck-sticky-panel__content_sticky {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Media Embeds */
+.ck-content .media {
+    margin: 20px 0;
+    clear: both;
+}
+
+.ck-content .media > div {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.ck-content .media iframe {
+    border-radius: 8px;
+}
+
+/* Image styles in editor */
+.ck-content .image {
+    margin: 20px 0;
+    display: table;
+}
+
+.ck-content .image.image_resized {
+    max-width: 100%;
+}
+
+.ck-content .image.image-style-side {
+    float: left;
+    margin-left: 1.5em;
+    margin-right: 0;
+    max-width: 50%;
+}
+
+.ck-content .image.image-style-align-left {
+    float: left;
+    margin-left: 1.5em;
+    margin-right: 0;
+}
+
+.ck-content .image.image-style-align-right {
+    float: right;
+    margin-right: 1.5em;
+    margin-left: 0;
+}
+
+.ck-content .image.image-style-align-center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.ck-content .image > figcaption {
+    display: table-caption;
+    caption-side: bottom;
+    word-break: break-word;
+    color: #64748b;
+    background: #f8fafc;
+    padding: 8px 12px;
+    font-size: 0.9em;
+    text-align: center;
+    border-radius: 0 0 8px 8px;
+}
+
+/* Image upload progress */
+.ck-content .image.ck-appear {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* Image widget selected state */
+.ck-content .image.ck-widget_selected {
+    outline: 3px solid #7c3aed !important;
+    outline-offset: 2px;
+}
+
+/* Custom image alignment classes */
+.ck-content .image-align-left,
+.ck-content figure.image-align-left {
+    float: left !important;
+    margin-right: 1.5em !important;
+    margin-left: 0 !important;
+}
+
+.ck-content .image-align-right,
+.ck-content figure.image-align-right {
+    float: right !important;
+    margin-left: 1.5em !important;
+    margin-right: 0 !important;
+}
+
+.ck-content .image-align-center,
+.ck-content figure.image-align-center {
+    float: none !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    display: block !important;
+}
+
+/* Media embed alignment */
+.ck-content .media.image-align-left,
+.ck-content figure.media.image-align-left {
+    float: left !important;
+    margin-right: 1.5em !important;
+    margin-left: 0 !important;
+    max-width: 50%;
+}
+
+.ck-content .media.image-align-right,
+.ck-content figure.media.image-align-right {
+    float: right !important;
+    margin-left: 1.5em !important;
+    margin-right: 0 !important;
+    max-width: 50%;
+}
+
+.ck-content .media.image-align-center,
+.ck-content figure.media.image-align-center {
+    float: none !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    display: block !important;
+    max-width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .ck.ck-toolbar {
+        padding: 4px 6px !important;
+    }
+
+    .ck.ck-button {
+        min-width: 26px;
+        min-height: 26px;
+        padding: 3px !important;
+    }
+
+    .ck.ck-toolbar__separator {
+        margin: 0 4px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .ck.ck-toolbar {
+        padding: 4px !important;
+    }
+
+    .ck.ck-button {
+        min-width: 24px;
+        min-height: 24px;
+        padding: 2px !important;
+    }
+
+    .ck.ck-toolbar__separator {
+        margin: 0 2px !important;
+        height: 16px !important;
+    }
+
+    .ck.ck-dropdown__button .ck-button__label {
+        display: none !important;
+    }
+
+    .ck.ck-editor__main > .ck-editor__editable {
+        min-height: 200px;
+        padding: 12px !important;
+    }
+
+    .ck-content .image.image-style-side,
+    .ck-content .image.image-style-align-left,
+    .ck-content .image.image-style-align-right {
+        float: none;
+        margin: 20px auto;
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .ck.ck-button {
+        min-width: 22px;
+        min-height: 22px;
+    }
+
+    .ck.ck-button .ck-icon {
+        width: 16px !important;
+        height: 16px !important;
+    }
+}

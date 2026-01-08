@@ -1,4 +1,4 @@
-"""Core modules for ChelCheleh CMS."""
+"""Core modules for ChelCheleh."""
 
 from .storage import Storage
 from .config import Config

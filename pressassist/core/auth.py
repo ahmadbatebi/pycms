@@ -37,7 +37,7 @@ class AuthManager:
 
     # Permission matrix: role -> allowed actions
     PERMISSIONS: dict[Role, set[str]] = {
-        Role.ADMIN: {
+        Role.SUPER_ADMIN: {
             "view_public",
             "view_hidden",
             "edit_page",
@@ -50,9 +50,31 @@ class AuthManager:
             "manage_plugins",
             "change_settings",
             "manage_users",
+            "manage_admins",  # Only super admin can manage admins
             "view_audit",
             "backup",
             "restore",
+            "edit_profile",
+            "view_profile",
+        },
+        Role.ADMIN: {
+            "view_public",
+            "view_hidden",
+            "edit_page",
+            "create_page",
+            "delete_page",
+            "edit_block",
+            "upload_file",
+            "delete_file",
+            "change_theme",
+            "manage_plugins",
+            "change_settings",
+            "manage_users",  # Can manage users and editors, not admins
+            "view_audit",
+            "backup",
+            "restore",
+            "edit_profile",
+            "view_profile",
         },
         Role.EDITOR: {
             "view_public",
@@ -62,11 +84,56 @@ class AuthManager:
             "delete_page",
             "edit_block",
             "upload_file",
+            "edit_profile",
+            "view_profile",
         },
-        Role.VIEWER: {
+        Role.USER: {
             "view_public",
+            "edit_profile",
+            "view_profile",
+            "comment",
         },
     }
+
+    # Role hierarchy for permission checking (higher index = higher privilege)
+    ROLE_HIERARCHY: list[Role] = [Role.USER, Role.EDITOR, Role.ADMIN, Role.SUPER_ADMIN]
+
+    @classmethod
+    def get_role_level(cls, role: Role) -> int:
+        """Get numeric level of a role for comparison."""
+        try:
+            return cls.ROLE_HIERARCHY.index(role)
+        except ValueError:
+            return -1
+
+    @classmethod
+    def can_manage_role(cls, actor_role: Role, target_role: Role) -> bool:
+        """Check if actor can manage target based on role hierarchy.
+
+        Args:
+            actor_role: Role of the user performing the action.
+            target_role: Role of the target user.
+
+        Returns:
+            True if actor can manage target.
+        """
+        actor_level = cls.get_role_level(actor_role)
+        target_level = cls.get_role_level(target_role)
+
+        # Super admin can manage everyone
+        if actor_role == Role.SUPER_ADMIN:
+            return True
+
+        # Admin can manage users and editors only
+        if actor_role == Role.ADMIN:
+            return target_level < cls.get_role_level(Role.ADMIN)
+
+        return False
+
+    @classmethod
+    def is_admin_or_above(cls, role: Role) -> bool:
+        """Check if role is admin or super_admin."""
+        return role in (Role.ADMIN, Role.SUPER_ADMIN)
 
     def __init__(
         self,
@@ -159,6 +226,40 @@ class AuthManager:
         # Use a mix of characters for better readability
         alphabet = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"
         return "".join(secrets.choice(alphabet) for _ in range(length))
+
+    def generate_reset_token(self) -> tuple[str, datetime]:
+        """Generate a password reset token with expiration.
+
+        Returns:
+            Tuple of (token, expiration_datetime).
+            Token expires in 1 hour.
+        """
+        token = secrets.token_urlsafe(32)
+        expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+        return token, expires_at
+
+    def verify_reset_token(
+        self, stored_token: str | None, stored_expires: datetime | None, provided_token: str
+    ) -> bool:
+        """Verify a password reset token.
+
+        Args:
+            stored_token: Token stored in user record.
+            stored_expires: Expiration time of stored token.
+            provided_token: Token provided by user.
+
+        Returns:
+            True if token is valid and not expired.
+        """
+        if not stored_token or not stored_expires or not provided_token:
+            return False
+
+        # Check expiration
+        if datetime.now(timezone.utc) > stored_expires:
+            return False
+
+        # Constant-time comparison
+        return secrets.compare_digest(stored_token, provided_token)
 
     def check_rate_limit(self, ip: str) -> bool:
         """Check if IP has exceeded rate limit.

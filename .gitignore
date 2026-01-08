@@ -69,6 +69,11 @@ data/audit.log
 .DS_Store
 Thumbs.db
 
+# IDE/Tool directories
+.zencoder/
+.zenflow/
+.claude/
+
 # Temporary files
 *.tmp
 *.temp

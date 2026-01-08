@@ -1,0 +1,223 @@
+/* RTL (Right-to-Left) Stylesheet for ChelCheleh */
+/* Applied when html[dir="rtl"] */
+
+/* Font for Persian/Arabic text - Local Vazirmatn */
+@font-face {
+    font-family: 'Vazirmatn';
+    src: url('../fonts/vazirmatn/Vazirmatn-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Vazirmatn';
+    src: url('../fonts/vazirmatn/Vazirmatn-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Vazirmatn';
+    src: url('../fonts/vazirmatn/Vazirmatn-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Base RTL settings */
+html[dir="rtl"] {
+    direction: rtl;
+}
+
+html[dir="rtl"] body {
+    font-family: 'Vazirmatn', Tahoma, Arial, sans-serif;
+    text-align: right;
+    direction: rtl;
+}
+
+/* Header - Site title on right, nav/switcher on left */
+html[dir="rtl"] .site-header .container {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 1rem;
+    direction: rtl;
+}
+
+html[dir="rtl"] .site-title {
+    order: 1;
+}
+
+html[dir="rtl"] .header-right {
+    order: 2;
+    flex-direction: row !important;
+    direction: rtl;
+    text-align: right;
+}
+
+/* Navigation */
+html[dir="rtl"] .main-nav ul {
+    flex-direction: row;
+    justify-content: flex-start;
+    direction: rtl;
+}
+html[dir="rtl"] .main-nav {
+    order: 1;
+}
+
+html[dir="rtl"] .main-nav a.active {
+    border-bottom: 2px solid var(--color-primary);
+}
+
+/* Language Switcher */
+html[dir="rtl"] .language-switcher {
+    flex-direction: row-reverse;
+    order: 2;
+    margin-left: auto;
+}
+
+/* Search Toggle - Position at the far left in RTL (after language switcher) */
+html[dir="rtl"] .search-toggle {
+    order: 3;
+}
+
+/* Typography */
+html[dir="rtl"] h1,
+html[dir="rtl"] h2,
+html[dir="rtl"] h3,
+html[dir="rtl"] h4,
+html[dir="rtl"] h5,
+html[dir="rtl"] h6 {
+    text-align: right;
+}
+
+/* Lists */
+html[dir="rtl"] ul,
+html[dir="rtl"] ol {
+    padding-right: 2em;
+    padding-left: 0;
+}
+
+html[dir="rtl"] li {
+    text-align: right;
+}
+
+/* Blockquote */
+html[dir="rtl"] blockquote {
+    border-left: none;
+    border-right: 4px solid var(--color-primary);
+    padding-left: 0;
+    padding-right: 1em;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* Code blocks */
+html[dir="rtl"] pre {
+    direction: ltr;
+    text-align: left;
+}
+
+html[dir="rtl"] code {
+    direction: ltr;
+}
+
+/* Page content */
+html[dir="rtl"] .page-content {
+    text-align: right;
+}
+
+/* Tables */
+html[dir="rtl"] table {
+    direction: rtl;
+}
+
+html[dir="rtl"] th,
+html[dir="rtl"] td {
+    text-align: right;
+}
+
+/* Forms */
+html[dir="rtl"] input,
+html[dir="rtl"] textarea,
+html[dir="rtl"] select {
+    text-align: right;
+    direction: rtl;
+}
+
+html[dir="rtl"] input[type="email"],
+html[dir="rtl"] input[type="url"],
+html[dir="rtl"] input[type="number"] {
+    direction: ltr;
+    text-align: left;
+}
+
+/* Footer */
+html[dir="rtl"] .site-footer {
+    text-align: center;
+}
+
+/* Sidebar */
+html[dir="rtl"] .site-sidebar {
+    text-align: right;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    html[dir="rtl"] .site-header .container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    html[dir="rtl"] .header-right {
+        flex-direction: column;
+    }
+
+    html[dir="rtl"] .main-nav ul {
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    html[dir="rtl"] .language-switcher {
+        flex-direction: row;
+    }
+}
+
+/* Text alignment classes */
+html[dir="rtl"] .text-align-left {
+    text-align: right;
+}
+
+html[dir="rtl"] .text-align-right {
+    text-align: left;
+}
+
+/* Keep center and justify as is */
+html[dir="rtl"] .text-align-center {
+    text-align: center;
+}
+
+html[dir="rtl"] .text-align-justify {
+    text-align: justify;
+}
+
+/* Float adjustments */
+html[dir="rtl"] .float-left {
+    float: right;
+}
+
+html[dir="rtl"] .float-right {
+    float: left;
+}
+
+/* Margin/Padding mirroring */
+html[dir="rtl"] .ml-auto {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+html[dir="rtl"] .mr-auto {
+    margin-right: 0;
+    margin-left: auto;
+}

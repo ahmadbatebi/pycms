@@ -2,7 +2,54 @@
 
 {% block content %}
 <article class="page-content">
+    {% if not cms.hide_title %}
     <h1>{{ cms.page_title }}</h1>
+    {% endif %}
     {{ cms.page_content | safe }}
 </article>
+
+{% if cms.blog_posts or cms.blog_total_posts > 0 %}
+<section class="blog-posts-widget{% if cms.hide_title %} no-page-header{% endif %}">
+    <h2>{{ _('Latest Posts') if _ else 'آخرین مطالب' }}</h2>
+    <div class="blog-posts blog-posts-{{ cms.blog_columns }}col">
+        {% for post in cms.blog_posts %}
+        <article class="blog-post-card">
+            {% if post.featured_image %}
+            <img src="/uploads/{{ post.featured_image }}" alt="{{ post.title }}" class="post-thumbnail">
+            {% endif %}
+            <div class="post-content">
+                {% if post.category %}
+                <span class="post-category">{{ post.category }}</span>
+                {% endif %}
+                <h2><a href="/blog/{{ post.slug }}">{{ post.title }}</a></h2>
+                {% if post.excerpt %}
+                <p class="post-excerpt">{{ post.excerpt }}</p>
+                {% endif %}
+                <div class="post-meta">
+                    <span class="post-author">{{ post.author }}</span>
+                    <span class="post-date">{{ post.published_at | jalali_date(cms.current_language) }}</span>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% if cms.blog_total_pages > 1 %}
+    <nav class="pagination">
+        {% if cms.blog_current_page > 1 %}
+        <a href="?blog_page={{ cms.blog_current_page - 1 }}" class="prev">&laquo; {{ _('Previous') if _ else 'قبلی' }}</a>
+        {% endif %}
+        {% for p in range(1, cms.blog_total_pages + 1) %}
+            {% if p == cms.blog_current_page %}
+            <span class="current">{{ p }}</span>
+            {% else %}
+            <a href="?blog_page={{ p }}">{{ p }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if cms.blog_current_page < cms.blog_total_pages %}
+        <a href="?blog_page={{ cms.blog_current_page + 1 }}" class="next">{{ _('Next') if _ else 'بعدی' }} &raquo;</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+</section>
+{% endif %}
 {% endblock %}

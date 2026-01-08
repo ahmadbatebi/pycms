@@ -1,4 +1,4 @@
-"""Admin module for ChelCheleh CMS."""
+"""Admin module for ChelCheleh."""
 
 from .routes import router
 

@@ -26,12 +26,48 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         """
         super().__init__(app)
         self.force_https = force_https
-        self.csp = self._build_csp(csp_directives)
+        self.csp_base = self._build_csp(csp_directives, include_upgrade=False)
+        self.csp_https = self._build_csp(csp_directives, include_upgrade=True)
+
+        # Embed sources for media embeds (YouTube, Vimeo, etc.)
+        embed_sources = (
+            "https://www.youtube.com https://www.youtube-nocookie.com "
+            "https://player.vimeo.com https://www.instagram.com "
+            "https://platform.twitter.com https://www.tiktok.com "
+            "https://open.spotify.com https://w.soundcloud.com "
+            "https://www.aparat.com"
+        )
+
+        # Blog/frontend CSP with embed support
+        blog_csp = dict(csp_directives or {})
+        blog_csp.setdefault(
+            "frame-src",
+            f"'self' {embed_sources}"
+        )
+        blog_csp.setdefault(
+            "script-src",
+            "'self' 'unsafe-inline' https://platform.twitter.com "
+            "https://www.instagram.com https://www.tiktok.com"
+        )
+        blog_csp.setdefault("style-src", "'self' 'unsafe-inline'")
+        self.blog_csp_base = self._build_csp(blog_csp, include_upgrade=False)
+        self.blog_csp_https = self._build_csp(blog_csp, include_upgrade=True)
+
+        # Admin CSP (CKEditor self-hosted - no external CDN needed)
         admin_csp = dict(csp_directives or {})
         admin_csp.setdefault("script-src", "'self' 'unsafe-inline'")
-        self.admin_csp = self._build_csp(admin_csp)
+        admin_csp.setdefault("style-src", "'self' 'unsafe-inline'")
+        admin_csp.setdefault("font-src", "'self'")
+        admin_csp.setdefault("img-src", "'self' data: blob:")
+        admin_csp.setdefault("connect-src", "'self'")
+        admin_csp.setdefault(
+            "frame-src",
+            f"'self' {embed_sources}"
+        )
+        self.admin_csp_base = self._build_csp(admin_csp, include_upgrade=False)
+        self.admin_csp_https = self._build_csp(admin_csp, include_upgrade=True)
 
-    def _build_csp(self, custom: dict[str, str] | None) -> str:
+    def _build_csp(self, custom: dict[str, str] | None, include_upgrade: bool) -> str:
         """Build Content-Security-Policy header value.
 
         Args:
@@ -47,11 +83,13 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "img-src": "'self' data:",
             "font-src": "'self'",
             "connect-src": "'self'",
+            "frame-src": "'self'",
             "frame-ancestors": "'none'",
             "base-uri": "'self'",
             "form-action": "'self'",
-            "upgrade-insecure-requests": "",
         }
+        if include_upgrade:
+            defaults["upgrade-insecure-requests"] = ""
 
         if custom:
             defaults.update(custom)
@@ -90,10 +128,18 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
 
         # Content Security Policy
-        if "/admin" in request.url.path:
-            response.headers["Content-Security-Policy"] = self.admin_csp
+        path = request.url.path
+        is_https = request.url.scheme == "https"
+
+        if "/admin" in path:
+            csp = self.admin_csp_https if is_https else self.admin_csp_base
+        elif "/blog" in path or path.startswith("/page/"):
+            # Blog and pages may contain embedded media
+            csp = self.blog_csp_https if is_https else self.blog_csp_base
         else:
-            response.headers["Content-Security-Policy"] = self.csp
+            csp = self.csp_https if is_https else self.csp_base
+
+        response.headers["Content-Security-Policy"] = csp
 
         # HSTS for HTTPS
         if self.force_https:

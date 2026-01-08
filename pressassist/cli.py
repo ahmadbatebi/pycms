@@ -1,4 +1,4 @@
-"""Command-line interface for ChelCheleh CMS."""
+"""Command-line interface for ChelCheleh."""
 
 import secrets
 import sys
@@ -14,7 +14,7 @@ from .core.storage import Storage
 @click.group()
 @click.version_option(prog_name="pressassist")
 def main():
-    """ChelCheleh CMS - A secure, Python-based flat-file CMS."""
+    """ChelCheleh - A secure, Python-based flat-file CMS."""
     pass
 
 
@@ -34,7 +34,7 @@ def main():
     help="Overwrite existing database",
 )
 def init(base_dir: Path | None, force: bool):
-    """Initialize a new ChelCheleh CMS site.
+    """Initialize a new ChelCheleh site.
 
     Creates the database, default content, and admin credentials.
     """
@@ -58,29 +58,30 @@ def init(base_dir: Path | None, force: bool):
 
     # Generate secure credentials
     login_slug = auth.generate_login_slug()
-    password = auth.generate_password(16)
-    password_hash = auth.hash_password(password)
+    default_password = "Admin12345!"
+    password_hash = auth.hash_password(default_password)
 
     # Initialize database
     storage.initialize(login_slug, password_hash)
 
     # Display results
     click.echo()
-    click.echo(click.style("ChelCheleh CMS initialized successfully!", fg="green", bold=True))
+    click.echo(click.style("ChelCheleh initialized successfully!", fg="green", bold=True))
     click.echo()
     click.echo(click.style("=" * 60, fg="yellow"))
     click.echo(click.style("IMPORTANT: Save these credentials securely!", fg="yellow", bold=True))
     click.echo(click.style("=" * 60, fg="yellow"))
     click.echo()
     click.echo(f"  Login URL:  http://127.0.0.1:8000/{login_slug}")
-    click.echo(f"  Password:   {password}")
+    click.echo(f"  Username:   admin")
+    click.echo(f"  Password:   {default_password}")
     click.echo()
-    click.echo(click.style("These credentials will NOT be shown again!", fg="red", bold=True))
+    click.echo(click.style("Change your password after first login!", fg="red", bold=True))
     click.echo()
     click.echo("Next steps:")
-    click.echo("  1. Save the credentials above")
-    click.echo("  2. Run: pressassist run")
-    click.echo("  3. Visit the login URL")
+    click.echo("  1. Run: pressassist run")
+    click.echo("  2. Visit the login URL")
+    click.echo("  3. Login with username 'admin' and password shown above")
     click.echo("  4. Change your password immediately")
     click.echo()
 
@@ -119,8 +120,31 @@ def init(base_dir: Path | None, force: bool):
     default=None,
     help="Base directory for the site",
 )
-def run(host: str, port: int, reload: bool, workers: int, base_dir: Path | None):
-    """Start the ChelCheleh CMS server."""
+@click.option(
+    "--ssl-keyfile",
+    type=click.Path(exists=True, path_type=Path),
+    default=None,
+    help="Path to SSL key file for HTTPS",
+)
+@click.option(
+    "--ssl-certfile",
+    type=click.Path(exists=True, path_type=Path),
+    default=None,
+    help="Path to SSL certificate file for HTTPS",
+)
+def run(
+    host: str,
+    port: int,
+    reload: bool,
+    workers: int,
+    base_dir: Path | None,
+    ssl_keyfile: Path | None,
+    ssl_certfile: Path | None,
+):
+    """Start the ChelCheleh server.
+
+    For HTTPS (recommended), provide both --ssl-keyfile and --ssl-certfile.
+    """
     import uvicorn
 
     if base_dir is None:
@@ -135,15 +159,34 @@ def run(host: str, port: int, reload: bool, workers: int, base_dir: Path | None)
         )
         sys.exit(1)
 
-    click.echo(f"Starting ChelCheleh CMS on http://{host}:{port}")
+    # Validate SSL options
+    if (ssl_keyfile is None) != (ssl_certfile is None):
+        click.echo(
+            click.style("Error: ", fg="red")
+            + "Both --ssl-keyfile and --ssl-certfile must be provided together."
+        )
+        sys.exit(1)
 
-    uvicorn.run(
-        "pressassist.main:app",
-        host=host,
-        port=port,
-        reload=reload,
-        workers=workers if not reload else 1,
-    )
+    use_ssl = ssl_keyfile is not None and ssl_certfile is not None
+    scheme = "https" if use_ssl else "http"
+
+    click.echo(f"Starting ChelCheleh on {scheme}://{host}:{port}")
+    if use_ssl:
+        click.echo(click.style("HTTPS enabled", fg="green"))
+
+    uvicorn_config = {
+        "app": "pressassist.main:app",
+        "host": host,
+        "port": port,
+        "reload": reload,
+        "workers": workers if not reload else 1,
+    }
+
+    if use_ssl:
+        uvicorn_config["ssl_keyfile"] = str(ssl_keyfile)
+        uvicorn_config["ssl_certfile"] = str(ssl_certfile)
+
+    uvicorn.run(**uvicorn_config)
 
 
 @main.command()
@@ -384,7 +427,7 @@ def check(base_dir: Path | None):
 
     config = AppConfig(base_dir=base_dir)
 
-    click.echo("ChelCheleh CMS Configuration Check")
+    click.echo("ChelCheleh Configuration Check")
     click.echo("=" * 40)
     click.echo()
 

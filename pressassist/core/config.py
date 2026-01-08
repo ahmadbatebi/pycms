@@ -42,7 +42,7 @@ class AppConfig(BaseModel):
     )
 
     # Content
-    allow_html_content: bool = False  # Default: Markdown only
+    allow_html_content: bool = True  # WYSIWYG editor produces HTML
 
     def __init__(self, **data):
         super().__init__(**data)

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block html_attrs %} data-theme="dark"{% endblock %}
+
+{% block theme_css %}
+<link rel="stylesheet" href="{{ cms.asset('css/template-dark.css') }}">
+{% endblock %}
+
+{% block body_class %} class="template-dark"{% endblock %}

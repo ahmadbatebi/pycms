@@ -180,13 +180,13 @@ class TestPermissions:
         assert auth.check_permission(Role.EDITOR, "manage_users") is False
         assert auth.check_permission(Role.EDITOR, "delete_file") is False
 
-    def test_viewer_permissions(self):
-        """Test viewer role has limited permissions."""
+    def test_user_permissions(self):
+        """Test user role has limited permissions."""
         auth = AuthManager()
 
-        assert auth.check_permission(Role.VIEWER, "view_public") is True
-        assert auth.check_permission(Role.VIEWER, "edit_page") is False
-        assert auth.check_permission(Role.VIEWER, "upload_file") is False
+        assert auth.check_permission(Role.USER, "view_public") is True
+        assert auth.check_permission(Role.USER, "edit_page") is False
+        assert auth.check_permission(Role.USER, "upload_file") is False
 
 
 class TestCSRFValidation:

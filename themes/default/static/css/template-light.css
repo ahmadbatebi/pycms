@@ -1,0 +1,363 @@
+/**
+ * ChelCheleh - Light Theme Template
+ * Clean, bright design with blue accents
+ */
+
+/* ===== CSS Variables ===== */
+:root {
+    --light-bg: #ffffff;
+    --light-bg-alt: #f8fafc;
+    --light-bg-header: #ffffff;
+    --light-bg-footer: #f3f4f6;
+    --light-text: #1f2937;
+    --light-text-muted: #6b7280;
+    --light-accent: #2563eb;
+    --light-accent-hover: #1d4ed8;
+    --light-border: #e5e7eb;
+    --light-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --light-shadow-lg: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== Base Styles ===== */
+.template-light {
+    background-color: var(--light-bg);
+    color: var(--light-text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.template-light * {
+    box-sizing: border-box;
+}
+
+/* ===== Typography ===== */
+.template-light h1,
+.template-light h2,
+.template-light h3,
+.template-light h4,
+.template-light h5,
+.template-light h6 {
+    color: var(--light-text);
+    font-weight: 600;
+    line-height: 1.3;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+}
+
+.template-light h1 { font-size: 2.5rem; }
+.template-light h2 { font-size: 2rem; }
+.template-light h3 { font-size: 1.5rem; }
+.template-light h4 { font-size: 1.25rem; }
+
+.template-light p {
+    margin-bottom: 1rem;
+    color: var(--light-text);
+}
+
+.template-light a {
+    color: var(--light-accent);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.template-light a:hover {
+    color: var(--light-accent-hover);
+    text-decoration: underline;
+}
+
+/* ===== Header ===== */
+.template-light .site-header {
+    background-color: var(--light-bg-header);
+    border-bottom: 1px solid var(--light-border);
+    box-shadow: var(--light-shadow);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.template-light .site-header .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.template-light .site-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--light-text);
+    text-decoration: none;
+}
+
+.template-light .site-title:hover {
+    color: var(--light-accent);
+    text-decoration: none;
+}
+
+/* ===== Navigation ===== */
+.template-light .main-nav ul {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.template-light .main-nav a {
+    display: block;
+    padding: 0.5rem 1rem;
+    color: var(--light-text-muted);
+    font-weight: 500;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+}
+
+.template-light .main-nav a:hover {
+    color: var(--light-accent);
+    background-color: var(--light-bg-alt);
+    text-decoration: none;
+}
+
+.template-light .main-nav a.active {
+    color: var(--light-accent);
+    background-color: rgba(37, 99, 235, 0.1);
+}
+
+/* ===== Main Content ===== */
+.template-light .site-main {
+    flex: 1;
+    background-color: var(--light-bg);
+}
+
+.template-light .site-main .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+}
+
+.template-light .page-content {
+    background-color: var(--light-bg);
+}
+
+.template-light .page-content h1:first-child {
+    margin-top: 0;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--light-border);
+    margin-bottom: 2rem;
+}
+
+/* ===== Content Elements ===== */
+.template-light blockquote {
+    border-left: 4px solid var(--light-accent);
+    margin: 1.5rem 0;
+    padding: 1rem 1.5rem;
+    background-color: var(--light-bg-alt);
+    border-radius: 0 0.375rem 0.375rem 0;
+    color: var(--light-text-muted);
+}
+
+.template-light code {
+    background-color: var(--light-bg-alt);
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-family: 'Fira Code', 'Consolas', monospace;
+    font-size: 0.9em;
+}
+
+.template-light pre {
+    background-color: #1e293b;
+    color: #e2e8f0;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+}
+
+.template-light pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+}
+
+.template-light img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    box-shadow: var(--light-shadow-lg);
+}
+
+.template-light table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+}
+
+.template-light th,
+.template-light td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--light-border);
+}
+
+.template-light th {
+    background-color: var(--light-bg-alt);
+    font-weight: 600;
+}
+
+.template-light tr:hover {
+    background-color: var(--light-bg-alt);
+}
+
+/* ===== Buttons ===== */
+.template-light .btn,
+.template-light button {
+    display: inline-block;
+    padding: 0.625rem 1.25rem;
+    background-color: var(--light-accent);
+    color: #ffffff;
+    border: none;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.template-light .btn:hover,
+.template-light button:hover {
+    background-color: var(--light-accent-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--light-shadow-lg);
+}
+
+.template-light .btn-outline {
+    background-color: transparent;
+    border: 2px solid var(--light-accent);
+    color: var(--light-accent);
+}
+
+.template-light .btn-outline:hover {
+    background-color: var(--light-accent);
+    color: #ffffff;
+}
+
+/* ===== Sidebar ===== */
+.template-light .site-sidebar {
+    background-color: var(--light-bg-alt);
+    border-top: 1px solid var(--light-border);
+}
+
+.template-light .site-sidebar .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+}
+
+/* ===== Footer ===== */
+.template-light .site-footer {
+    background-color: var(--light-bg-footer);
+    border-top: 1px solid var(--light-border);
+    color: var(--light-text-muted);
+}
+
+.template-light .site-footer .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    text-align: center;
+}
+
+.template-light .site-footer a {
+    color: var(--light-text-muted);
+}
+
+.template-light .site-footer a:hover {
+    color: var(--light-accent);
+}
+
+.template-light .cms-footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--light-border);
+    font-size: 0.875rem;
+}
+
+/* ===== Responsive Design ===== */
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .template-light .site-main .container {
+        max-width: 100%;
+    }
+
+    .template-light h1 { font-size: 2rem; }
+    .template-light h2 { font-size: 1.75rem; }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+    .template-light .site-header .container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .template-light .main-nav ul {
+        justify-content: center;
+    }
+
+    .template-light .main-nav a {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .template-light .site-main .container {
+        padding: 1.5rem 1rem;
+    }
+
+    .template-light h1 { font-size: 1.75rem; }
+    .template-light h2 { font-size: 1.5rem; }
+    .template-light h3 { font-size: 1.25rem; }
+
+    .template-light blockquote {
+        padding: 0.75rem 1rem;
+        margin: 1rem 0;
+    }
+
+    .template-light pre {
+        padding: 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .template-light table {
+        font-size: 0.9rem;
+    }
+
+    .template-light th,
+    .template-light td {
+        padding: 0.5rem;
+    }
+}
+
+/* ===== Print Styles ===== */
+@media print {
+    .template-light .site-header,
+    .template-light .site-sidebar,
+    .template-light .cms-footer {
+        display: none;
+    }
+
+    .template-light .site-main {
+        padding: 0;
+    }
+
+    .template-light a {
+        color: var(--light-text);
+    }
+}
